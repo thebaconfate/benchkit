@@ -58,7 +58,6 @@ class MemcachedBench:
             ctx.exec(argv=["autoreconf", "-ivf"], cwd=src_dir, output_is_log=True)
             ctx.exec(argv=["./configure"], cwd=src_dir, output_is_log=True)
             make(ctx, src_dir=src_dir, targets=[], options={})
-            make(ctx, src_dir=src_dir, targets=["install"], options={})
         if not platform.comm.isdir(tmpdb_dir):
             platform.comm.makedirs(path=tmpdb_dir, exist_ok=True)
             ctx.exec(

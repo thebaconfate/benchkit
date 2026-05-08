@@ -74,7 +74,12 @@ from typing import Iterable
 
 from benchkit.core.bktypes import RecordResult
 from benchkit.core.bktypes.callresults import BuildResult, FetchResult, RunResult
-from benchkit.core.bktypes.contexts import BuildContext, CollectContext, FetchContext, RunContext
+from benchkit.core.bktypes.contexts import (
+    BuildContext,
+    CollectContext,
+    FetchContext,
+    RunContext,
+)
 from benchkit.dependencies.packages import PackageDependency
 from benchkit.utils.buildtools import build_dir_from_ctx, cmake_build
 from benchkit.utils.dir import benchkit_dir, get_benches_dir
@@ -232,14 +237,16 @@ class LevelDBBench:
         build_dir = ctx.build_result.build_dir
         tmpdb_dir = ctx.build_result.other["tmpdb_dir"]
         workload_args = (
-            [f"--duration={duration_s}"] if duration_s is not None else [f"--num={nb_iterations}"]
+            [f"--duration={duration_s}"]
+            if duration_s is not None
+            else [f"--num={nb_iterations}"]
         )
 
         run_command = [
             "./db_bench",
             f"--threads={nb_threads}",
             f"--benchmarks={bench_name}",
-            f'--use_existing_db={"1" if use_existing_db else "0"}',
+            f"--use_existing_db={'1' if use_existing_db else '0'}",
             f"--db={tmpdb_dir}",
             *workload_args,
         ]
@@ -320,7 +327,9 @@ class LevelDBBench:
         # 1) Parse patched benchstats line
         # ------------------------------------------------------------------
         if "benchstats:" not in output:
-            raise ValueError(f"Incoherent output from leveldb (missing benchstats line):\n{output}")
+            raise ValueError(
+                f"Incoherent output from leveldb (missing benchstats line):\n{output}"
+            )
 
         benchstats = output.split("benchstats:")[-1].strip()
         values = benchstats.split(";")
@@ -328,18 +337,24 @@ class LevelDBBench:
         # Infer number of threads from benchstats format:
         # duration + global_count + N thread fields
         if len(values) < 3:
-            raise ValueError(f"Incoherent benchstats format, expected at least 3 fields:\n{output}")
+            raise ValueError(
+                f"Incoherent benchstats format, expected at least 3 fields:\n{output}"
+            )
 
         nb_threads = len(values) - 2
 
-        names = ["duration", "global_count"] + [f"thread_{k}" for k in range(nb_threads)]
+        names = ["duration", "global_count"] + [
+            f"thread_{k}" for k in range(nb_threads)
+        ]
         raw = dict(zip(names, values))
 
         try:
             duration_raw = float(raw["duration"])
             global_count = int(float(raw["global_count"]))
         except ValueError as e:
-            raise ValueError(f"Failed to parse numeric benchstats values:\n{output}") from e
+            raise ValueError(
+                f"Failed to parse numeric benchstats values:\n{output}"
+            ) from e
 
         # Historical normalization: duration is divided by number of threads
         duration = duration_raw / nb_threads if nb_threads > 0 else duration_raw
