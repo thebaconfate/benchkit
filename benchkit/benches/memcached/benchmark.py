@@ -58,29 +58,14 @@ class MemcachedBench:
             ctx.exec(argv=["autoreconf", "-ivf"], cwd=src_dir, output_is_log=True)
             ctx.exec(argv=["./configure"], cwd=src_dir, output_is_log=True)
             make(ctx, src_dir=src_dir, targets=[], options={})
-        if not platform.comm.isdir(tmpdb_dir):
-            platform.comm.makedirs(path=tmpdb_dir, exist_ok=True)
-            ctx.exec(
-                argv=[
-                    "./db_bench",
-                    "--threads=1",
-                    "--benchmarks=fillseq",
-                    f"--db={tmpdb_dir}",
-                ],
-                cwd=src_dir,
-                output_is_log=True,
-            )
+        # if not platform.comm.isdir(tmpdb_dir):
+        # platform.comm.makedirs(path=tmpdb_dir, exist_ok=True)
 
         result = BuildResult(
             build_dir=src_dir,
             other={
                 "tmpdb_dir": tmpdb_dir,
             },
-        )
-        src_dir = ctx.fetch_result.src_dir
-        build_dir = src_dir / "bin"
-        result = BuildResult(
-            build_dir=build_dir,
         )
         return result
 
