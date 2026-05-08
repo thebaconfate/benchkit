@@ -13,7 +13,7 @@ from benchkit.core.bktypes.contexts import (
 from benchkit.dependencies.packages import PackageDependency
 from benchkit.utils.dir import get_benches_dir
 from benchkit.utils.fetchtools import git_clone
-from benchkit.utils.buildtools import make
+from benchkit.utils.buildtools import build_dir_from_ctx, make
 
 
 class MemcachedBench:
@@ -32,20 +32,13 @@ class MemcachedBench:
             FetchResult containing the path to the cloned repository.
         """
         parent_dir = get_benches_dir(parent_dir=parent_dir)
-        leveldb_dir = git_clone(
+        memcached_dir = git_clone(
             ctx=ctx,
             url="https://github.com/redis/memtier_benchmark.git",
             commit="378cbb9f573916c1eeca9158c66047cea232dbcd",
             parent_dir=parent_dir,
         )
-
-        ctx.exec(
-            argv=["git", "checkout", "master"],
-            cwd=leveldb_dir,
-            output_is_log=True,
-        )
-
-        return FetchResult(src_dir=leveldb_dir)
+        return FetchResult(src_dir=memcached_dir)
 
     def build(
         self,
@@ -57,11 +50,36 @@ class MemcachedBench:
         make
         sudo make install
         """
-        ctx.exec(argv=["autoreconf", "-ivf"])
-        ctx.exec(argv=["./configure"])
+        platform = ctx.platform
         src_dir = ctx.fetch_result.src_dir
-        make(ctx, src_dir=src_dir, targets=[], options={})
-        make(ctx, src_dir=src_dir, targets=["install"], options={})
+        obj_dir = build_dir_from_ctx(ctx=ctx)
+        memcached_bench_path = obj_dir / "memcached_bench"
+        tmpdb_dir = obj_dir / "tmp" / "benchkit_memcached"
+        if not platform.comm.isfile(memcached_bench_path):
+            ctx.exec(argv=["autoreconf", "-ivf"], cwd=obj_dir, output_is_log=True)
+            ctx.exec(argv=["./configure"], cwd=obj_dir, output_is_log=True)
+            make(ctx, src_dir=src_dir, targets=[], options={})
+            make(ctx, src_dir=src_dir, targets=["install"], options={})
+        if not platform.comm.isdir(tmpdb_dir):
+            platform.comm.makedirs(path=tmpdb_dir, exist_ok=True)
+            ctx.exec(
+                argv=[
+                    "./db_bench",
+                    "--threads=1",
+                    "--benchmarks=fillseq",
+                    f"--db={tmpdb_dir}",
+                ],
+                cwd=obj_dir,
+                output_is_log=True,
+            )
+
+        result = BuildResult(
+            build_dir=obj_dir,
+            other={
+                "tmpdb_dir": tmpdb_dir,
+            },
+        )
+        src_dir = ctx.fetch_result.src_dir
         build_dir = src_dir / "bin"
         result = BuildResult(
             build_dir=build_dir,
