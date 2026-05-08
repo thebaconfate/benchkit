@@ -52,12 +52,11 @@ class MemcachedBench:
         """
         platform = ctx.platform
         src_dir = ctx.fetch_result.src_dir
-        obj_dir = build_dir_from_ctx(ctx=ctx)
-        memcached_bench_path = obj_dir / "memcached_bench"
-        tmpdb_dir = obj_dir / "tmp" / "benchkit_memcached"
+        memcached_bench_path = src_dir / "memcached_bench"
+        tmpdb_dir = src_dir / "tmp" / "benchkit_memcached"
         if not platform.comm.isfile(memcached_bench_path):
-            ctx.exec(argv=["autoreconf", "-ivf"], cwd=obj_dir, output_is_log=True)
-            ctx.exec(argv=["./configure"], cwd=obj_dir, output_is_log=True)
+            ctx.exec(argv=["autoreconf", "-ivf"], cwd=src_dir, output_is_log=True)
+            ctx.exec(argv=["./configure"], cwd=src_dir, output_is_log=True)
             make(ctx, src_dir=src_dir, targets=[], options={})
             make(ctx, src_dir=src_dir, targets=["install"], options={})
         if not platform.comm.isdir(tmpdb_dir):
@@ -69,12 +68,12 @@ class MemcachedBench:
                     "--benchmarks=fillseq",
                     f"--db={tmpdb_dir}",
                 ],
-                cwd=obj_dir,
+                cwd=src_dir,
                 output_is_log=True,
             )
 
         result = BuildResult(
-            build_dir=obj_dir,
+            build_dir=src_dir,
             other={
                 "tmpdb_dir": tmpdb_dir,
             },
