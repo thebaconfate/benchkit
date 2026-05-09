@@ -192,7 +192,6 @@ class MemcachedBench:
     def collect(
         self,
         ctx: CollectContext,
-        bench_name: str,
     ) -> RecordResult:
         """
         Parse performance metrics from LevelDB db_bench output.
@@ -254,85 +253,48 @@ class MemcachedBench:
                 "ofright": 1000000,
             }
         """
-        output = ctx.run_result.outputs[-1].stdout
-
-        # ------------------------------------------------------------------
-        # 1) Parse patched benchstats line
-        # ------------------------------------------------------------------
-        if "benchstats:" not in output:
-            raise ValueError(
-                f"Incoherent output from leveldb (missing benchstats line):\n{output}"
-            )
-
-        benchstats = output.split("benchstats:")[-1].strip()
-        values = benchstats.split(";")
-
-        # Infer number of threads from benchstats format:
-        # duration + global_count + N thread fields
-        if len(values) < 3:
-            raise ValueError(
-                f"Incoherent benchstats format, expected at least 3 fields:\n{output}"
-            )
-
-        nb_threads = len(values) - 2
-
-        names = ["duration", "global_count"] + [
-            f"thread_{k}" for k in range(nb_threads)
+        output = [
+            line for line in ctx.run_result.outputs[-1].stdout.split("\n") if line != ""
         ]
-        raw = dict(zip(names, values))
+        threads = int(output[0].split()[0])
+        connections_per_thread = int(output[1].split()[0])
+        requests_per_client = int(output[2].split()[0])
+        start_stats_idx = output.index("ALL STATS") + 2  # skip the ---- line
+        start_dist_idx = output.index("Request Latency Distribution") + 1
 
-        try:
-            duration_raw = float(raw["duration"])
-            global_count = int(float(raw["global_count"]))
-        except ValueError as e:
-            raise ValueError(
-                f"Failed to parse numeric benchstats values:\n{output}"
-            ) from e
+        # Parsing the ALL STATS table
+        all_stats_headers = output[start_stats_idx].split()
 
-        # Historical normalization: duration is divided by number of threads
-        duration = duration_raw / nb_threads if nb_threads > 0 else duration_raw
-
-        record: RecordResult = {
-            "duration": duration,
-            "global_count": global_count,
-            "operations/second": (global_count / duration) if duration > 0 else 0.0,
-        }
-
-        # Per-thread operation counts
-        for k in range(nb_threads):
+        def parseFloat(value):
             try:
-                record[f"thread_{k}"] = int(float(raw[f"thread_{k}"]))
-            except ValueError as e:
-                raise ValueError(
-                    f"Failed to parse per-thread count for thread {k}:\n{output}"
-                ) from e
+                return float(value)
+            except ValueError:
+                return value
 
-        # ------------------------------------------------------------------
-        # 2) Parse standard db_bench summary line (latency + found info)
-        # ------------------------------------------------------------------
-        #
-        # Example:
-        #   readrandom : 1.841 micros/op; (539804 of 1000000 found)
-        #
-        summary_re = re.search(
-            rf"^{re.escape(bench_name)}\s*:\s*"
-            rf"(?P<microspop>[0-9]*\.?[0-9]+)\s+micros/op;?\s*"
-            rf"(?:\(\s*(?P<ofleft>\d+)\s+of\s+(?P<ofright>\d+)\s+found\s*\))?",
-            output,
-            flags=re.MULTILINE,
-        )
+        all_stats_rows = [
+            [parseFloat(data) if "-" not in data else None for data in row.split()]
+            for row in output[start_stats_idx + 2 : start_dist_idx - 1]
+        ]
+        # skips the --- line after the headers and collects the table rows till
+        # the dist table
 
-        if summary_re:
-            record["microseconds/operation"] = float(summary_re.group("microspop"))
-
-            if summary_re.group("ofleft") is not None:
-                record["ofleft"] = int(summary_re.group("ofleft"))
-                record["ofright"] = int(summary_re.group("ofright"))
-
-        duration_s = ctx.run_result.outputs[-1].duration_s
-        record["duration_s"] = duration_s
-
-        return record
+        # Parsing the Request Latency Distribution table
+        dist_headers = output[start_dist_idx].split()
+        dist_rows = [
+            [parseFloat(data) for data in row.split()]
+            for row in output[start_dist_idx + 1 :]
+            if "-" not in row
+        ]
+        result: RecordResult = {
+            "threads": threads,
+            "connections_per_thread": connections_per_thread,
+            "requests_per_client": requests_per_client,
+            "all_stats_headers": all_stats_headers,
+            "all_stats_rows": all_stats_rows,
+            "dist_headers": dist_headers,
+            "dist_rows": dist_rows,
+        }
+        return result
 
     @staticmethod
     def dependencies() -> list[PackageDependency]:
