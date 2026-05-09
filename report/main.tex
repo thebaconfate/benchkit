@@ -1,22 +1,33 @@
-\documentclass{article}
+\documentclass[a4paper]{article}
 %\documentclass{report} % Can be article, report, book, anything you want!
 
 \usepackage{vub} % this will automatically set to A4 paper. We're not in the US.
 % if, for some obscure reason, you need another format, please file an issue (see further).
+\usepackage{hyperref}
 
 % The `vub` package has many options.
 % Please read the documentation at https://gitlab.com/rubdos/texlive-vub if you want to learn about them.
 
 % Feel free to mix and match with other packages.
 
-\title{Your Title Here}
-\subtitle{An optional Subtitle Here}
+
+\setlength{\parskip}{1em}
+\title{Implementing a benchmark in benchkit}
+\subtitle{Performance-Analysis-and-Evaluation}
 \faculty{Sciences and Bio-Engineering Sciences} % Note: without the word "Faculty"!
-\author{John Doe}
+\author{Gérard Lichtert\\
+        0557513\\
+    \href{mailto:gerard.lichtert@vub.be}{gerard.lichtert@vub.be}
+}
 
 \begin{document}
 \maketitle
 
-Your text goes here.
+\tableofcontents
+\newpage
+\section{Introduction}
+memtier\_benchmark is a high-performance traffic generation tool specifically designed to stress-test NoSQL key-value stores like Redis, Valkey, and Memcached.
+
+While many benchmarks focus on how fast a database can write to a disk, memtier focuses on high-throughput network I/O and concurrency. It simulates thousands of simultaneous clients to measure how well a database handles a massive volume of requests and at what point the response time (latency) begins to degrade.
 
 \end{document}
