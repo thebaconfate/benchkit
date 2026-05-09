@@ -21,9 +21,9 @@ br = bc.call(bench.build)
 rc = RunContext.from_build(
     ctx=bc,
     build_result=br,
-    run_args={"bench_name": "readrandom", "nb_threads": 3},
-    duration_s=1,
+    run_args={},
 )
 
 
 rr = rc.call(bench.run)
+rc.call(bench.cleanup)
