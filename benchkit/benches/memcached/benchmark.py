@@ -90,7 +90,7 @@ class MemcachedBench:
         )
 
         run_command = [
-            "./db_bench",
+            "./memtier_benchmark",
             f"--threads={nb_threads}",
             f"--benchmarks={bench_name}",
             f"--use_existing_db={'1' if use_existing_db else '0'}",
