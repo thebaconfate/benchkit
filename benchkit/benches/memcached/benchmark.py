@@ -261,7 +261,6 @@ class MemcachedBench:
             raise Exception(f"Table not found starting at index")
         start_stats_idx += 2  # skip the ---- line
         start_dist_idx = output.index("Request Latency Distribution")
-        print(f"STATS HEADERS:{start_stats_idx}")
 
         # Parsing the ALL STATS table
 
@@ -280,8 +279,6 @@ class MemcachedBench:
         }
 
         for raw_row in output[start_stats_idx + 2 : start_dist_idx]:
-            print("raw_row")
-            print(raw_row)
             row = raw_row.split()
             row_type = row[0]
             for i, value in enumerate(row[1:], start=1):
