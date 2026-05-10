@@ -1,6 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1778262273.07769 "/home/glichtert/Documents/benchkit/report/main.tex" "main.pdf" "main" 1778262274.2848 0
-  "/home/glichtert/Documents/benchkit/report/main.tex" 1778262270.48061 1388 4a11e503c19e5e47e6703ca1252f44c8 ""
+["pdflatex"] 1778428140.87578 "/home/glichtert/Documents/benchkit/report/main.tex" "main.pdf" "main" 1778428142.43537 0
+  "/home/glichtert/Documents/benchkit/report/main.tex" 1778428138.28379 1454 010302ed56ea990f382a79ac02ee3db8 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/tex-gyre/q-ec.enc" 1529098226 2457 aaabbccba4df2a7f7371410ee4e075a3 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm" 1136768653 1328 c834bbb027764024c09d3d2bf908b5f0 ""
@@ -138,10 +138,10 @@
   "/usr/share/texlive/texmf-dist/web2c/texmf.cnf" 1775001600 40900 887e0dc8cac988a9e9c574af364cf837 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1776719345.95155 792497 e5103ff9cc582836887d5be877b2b1d7 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1776719292 7572853 bf85baa009b8bae905b7c352278fb6a5 ""
-  "main.aux" 1778262274.0643 700 b9ff16158e8b7597d5b11a176efa0d93 "pdflatex"
-  "main.out" 1778262274.0653 103 9814c2d956916adb9290eca4e25c967a "pdflatex"
-  "main.tex" 1778262270.48061 1388 4a11e503c19e5e47e6703ca1252f44c8 ""
-  "main.toc" 1778262274.0653 68 67461dc3484237a0a884eed17df73836 "pdflatex"
+  "main.aux" 1778428142.17579 807 0788b74d7980282fe8955d1e15b4c3e8 "pdflatex"
+  "main.out" 1778428142.17679 196 c3c1b8a7cd270218f423718eccb018b0 "pdflatex"
+  "main.tex" 1778428138.28379 1454 010302ed56ea990f382a79ac02ee3db8 ""
+  "main.toc" 1778428142.17779 134 c260eccc143250d2123062316cca1cfa "pdflatex"
   "vub.sty" 1778252646.56085 2425 13e85d4232b22f4165278bf9b51f64cf ""
   "vub_logo_cmyk.pdf" 1778252646.56098 17579 c14772a8039db1d46bbce1ddba3a9ba1 ""
   "vubprivate.sty" 1778252646.56098 1471 addc750610fc9547bde6da7ffa8aca6f ""

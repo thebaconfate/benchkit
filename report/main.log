@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2026.4.20)  8 MAY 2026 19:44
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2026.4.20)  10 MAY 2026 17:49
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -682,7 +682,7 @@ Package hyperref Info: Link coloring OFF on input line 23.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-<vub_logo_cmyk.pdf, id=11, 2094.8363pt x 738.42874pt>
+<vub_logo_cmyk.pdf, id=15, 2094.8363pt x 738.42874pt>
 File: vub_logo_cmyk.pdf Graphic file (type pdf)
 <use vub_logo_cmyk.pdf>
 Package pdftex.def Info: vub_logo_cmyk.pdf  used on input line 25.
@@ -718,13 +718,13 @@ l.27 \newpage
 
 ] [2] (./main.aux)
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 9814C2D956916ADB9290ECA4E25C967A;103.
+(rerunfilecheck)             Checksum: C3C1B8A7CD270218F423718ECCB018B0;196.
  ) 
 Here is how much of TeX's memory you used:
- 20376 strings out of 477136
- 387332 string characters out of 5813392
+ 20378 strings out of 477136
+ 387352 string characters out of 5813392
  1853388 words of memory out of 6000000
- 40312 multiletter control sequences out of 15000+600000
+ 40313 multiletter control sequences out of 15000+600000
  529200 words of font info for 41 fonts, out of 8000000 for 9000
  430 hyphenation exceptions out of 8191
  117i,7n,118p,475b,450s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -733,10 +733,10 @@ r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texli
 ve/texmf-dist/fonts/type1/public/tex-gyre/qagb.pfb></usr/share/texlive/texmf-di
 st/fonts/type1/public/tex-gyre/qagr.pfb>
-Output written on main.pdf (3 pages, 130689 bytes).
+Output written on main.pdf (3 pages, 132768 bytes).
 PDF statistics:
- 62 PDF objects out of 1000 (max. 8388607)
- 44 compressed objects within 1 object stream
- 5 named destinations out of 1000 (max. 500000)
- 26 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 67 PDF objects out of 1000 (max. 8388607)
+ 49 compressed objects within 1 object stream
+ 6 named destinations out of 1000 (max. 500000)
+ 34 words of extra memory for PDF output out of 10000 (max. 10000000)
 
