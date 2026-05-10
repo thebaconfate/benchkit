@@ -7,7 +7,17 @@ from benchkit.platforms import get_current_platform
 
 
 def MemcachedCampaign(variables: Dict[str, Iterable[Any]], **kwargs):
-    """ """
+    """
+    Method to create a campaign for the MemcachedBench.
+
+    Args:
+        variables: Variables to be passed along
+        **kwargs: fall through kwars that are passed to the
+        CampaignCartesianProduct that aren't explicitly in the parameters
+
+    Returns:
+        A CampaignCartesianProduct
+    """
 
     platform = get_current_platform()
     events = ["cache-misses", "instructions", "cycles"]
