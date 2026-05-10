@@ -1,32 +1,29 @@
-from benchkit.benches.memcached import MemcachedBench
 from benchkit.benches.memcached.campaign import MemcachedCampaign
-from benchkit.core.compat.new2old import CampaignCartesianProduct
+from benchkit.campaign import CampaignSuite
+from benchkit.commandwrappers.perf import PerfStatWrap
+from benchkit.platforms import get_current_platform
+from tests.campaigns.campaign_perf_cartprod import make_perfstat_process_dataframe
 
 variables = {
-    "nb_threads": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    "run_count": [30],
-    "pipeline": [1, 2, 3, 4, 5, 6],
-    "nb_clients": [10, 20, 30, 40, 50, 60, 70, 80, 100],
-    "ratio": [
-        "1:10",
-        "2:10",
-        "3:10",
-        "4:10",
-        "5:10",
-        "6:10",
-        "7:10",
-        "8:10",
-        "9:10",
-        "10:10",
-    ],
-    "key_pattern": ["R:R", "G:G", "S:S", "P:P", "Z:Z"],
-    "data_size": [8, 16, 32, 64],
-    "key_minimum": [0, 1],
+    "nb_threads": [i for i in range(1, 3)],
+    # "run_count": [2],
+    "key_pattern": ["G:G"],
 }
 
-campaign = CampaignCartesianProduct(
-    benchmark=MemcachedBench(),
+
+campaign = MemcachedCampaign(
     variables=variables,
+    **{
+        "nb_runs": 1,
+    },
 )
 
-campaign.run()
+
+campaigns = [campaign]
+suite = CampaignSuite(campaigns=campaigns)
+suite.run_suite()
+suite.generate_graph(plot_name="lineplot", x="nb_threads", y="throughput")
+suite.generate_graph(
+    plot_name="scatterplot", x="perf-stat/cycles", y="perf-stat/instructions"
+)
+suite.generate_graph(plot_name="barplot", x="nb_threads", y="perf-stat/cache-misses")

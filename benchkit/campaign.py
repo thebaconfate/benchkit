@@ -65,7 +65,9 @@ class Campaign:
 
         for param_key in ["benchmark", "experiment_name", "benchmark_name", "nb_runs"]:
             if param_key not in params:
-                raise ValueError(f'Ill formed self.parameters: missing "{param_key}" key.')
+                raise ValueError(
+                    f'Ill formed self.parameters: missing "{param_key}" key.'
+                )
 
         self._benchmark = params.get("benchmark")
         self._benchmark.configure_variables(
@@ -363,7 +365,9 @@ class CampaignSuite:
 
         if not parallel:
             for campaign, remaining_seconds in zip(self._campaigns, remaining):
-                campaign.campaign_run(other_campaigns_seconds=remaining_seconds, barrier=None)
+                campaign.campaign_run(
+                    other_campaigns_seconds=remaining_seconds, barrier=None
+                )
         else:
             for campaign in self._campaigns:
                 p = multiprocessing.Process(
@@ -393,7 +397,9 @@ class CampaignSuite:
         sum_duration_suffix = ""
         if None not in durations:
             sum_durations = sum(durations)
-            sum_duration_suffix = f" - {sum_durations:12} seconds - {seconds2pretty(sum_durations)}"
+            sum_duration_suffix = (
+                f" - {sum_durations:12} seconds - {seconds2pretty(sum_durations)}"
+            )
         print("-" * 64)
         print(f"Total: {sum_runs:14} runs{sum_duration_suffix}")
         print("-" * 64)
@@ -414,7 +420,9 @@ class CampaignSuite:
                 callback function to process the dataframe before it is plotted.
                 Defaults to identical_dataframe.
         """
-        campaign_paths = [bdd for c in self._campaigns if (bdd := c.base_data_dir()) is not None]
+        campaign_paths = [
+            bdd for c in self._campaigns if (bdd := c.base_data_dir()) is not None
+        ]
         suite_path_tentative = os.path.commonprefix(campaign_paths)
         if os.path.isdir(suite_path_tentative):
             suite_path = pathlib.Path(suite_path_tentative)

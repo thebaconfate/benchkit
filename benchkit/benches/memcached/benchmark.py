@@ -60,6 +60,7 @@ class MemcachedBench:
         src_dir = ctx.fetch_result.src_dir
         memcached_bench_path = src_dir / "memcached_bench"
         if not platform.comm.isfile(memcached_bench_path):
+            make(ctx, src_dir=src_dir, targets=["clean"], options={})
             ctx.exec(argv=["autoreconf", "-ivf"], cwd=src_dir, output_is_log=True)
             ctx.exec(argv=["./configure"], cwd=src_dir, output_is_log=True)
             make(ctx, src_dir=src_dir, targets=[], options={})
@@ -71,7 +72,10 @@ class MemcachedBench:
         )
         return result
 
-    def cleanup(self, ctx: RunContext):
+    def _start_up_redis(self, ctx: RunContext):
+        ctx.exec(argv=["systemctl", "start", "redis"], output_is_log=True)
+
+    def _cleaup_redis(self, ctx: RunContext):
         """
         Reset the target database to ensure a clean state for subsequent runs.
 
@@ -83,7 +87,10 @@ class MemcachedBench:
             ctx: RunContext providing the communication layer to execute
                  the cleanup command.
         """
-        ctx.exec(argv=["redis-cli", "FLUSHDB"], output_is_log=True)
+        ctx.exec(argv=["redis-cli", "FLUSHALL"], output_is_log=True)
+
+    def _stop_redis(self, ctx: RunContext):
+        ctx.exec(argv=["systemctl", "stop", "redis"], output_is_log=True)
 
     def run(
         self,
@@ -160,6 +167,7 @@ class MemcachedBench:
         run_command = [cmd for cmd in run_command if cmd != ""]
         exec_out = ctx.exec(argv=run_command, cwd=build_dir, output_is_log=True)
         result = RunResult(outputs=[exec_out])
+        self._cleaup_redis(ctx)
         return result
 
     def collect(
@@ -230,12 +238,7 @@ class MemcachedBench:
                 "threads": 4,
                 "connections_per_thread": 50,
                 "requests_per_client": 10000,
-                "all_stats_headers": ["Type", "Ops/sec", "Hits/sec",
-                                      "Misses/sec", "Avg. Latency", "p50
-                                      Latency", "p99 Latency", "p99.9
-                                      Latency", "KB/sec"],
-                "all_stats_rows": [["Sets", 7857.92, None, None, "2.31402",
-                                    "2.14300", "4.44700", "6.27100", "605.20"],...],
+                ""
             }
         """
         output = [
@@ -244,10 +247,24 @@ class MemcachedBench:
         threads = int(output[0].split()[0])
         connections_per_thread = int(output[1].split()[0])
         requests_per_client = int(output[2].split()[0])
-        start_stats_idx = output.index("ALL STATS") + 2  # skip the ---- line
+        # TODO: implement parser when the --run-count > 1
+        start_stats_idx = next(
+            (
+                i
+                for i, line in enumerate(output)
+                if "ALL STATS" in line or "AGGREGATED AVERAGE RESULTS" in line
+            ),
+            None,
+        )
+
+        if start_stats_idx is None:
+            raise Exception(f"Table not found starting at index")
+        start_stats_idx += 2  # skip the ---- line
         start_dist_idx = output.index("Request Latency Distribution")
+        print(f"STATS HEADERS:{start_stats_idx}")
 
         # Parsing the ALL STATS table
+
         all_stats_headers = output[start_stats_idx].split()
 
         def parseFloat(value):
@@ -262,18 +279,16 @@ class MemcachedBench:
             "requests_per_client": requests_per_client,
         }
 
-        total_throughput = 0
-
         for raw_row in output[start_stats_idx + 2 : start_dist_idx]:
+            print("raw_row")
+            print(raw_row)
             row = raw_row.split()
             row_type = row[0]
             for i, value in enumerate(row[1:], start=1):
-                if i == 1:
-                    total_throughput += float(value)
                 header_name = all_stats_headers[i].replace(" ", "_")
                 key = f"{row_type}_{header_name}"
                 result[key] = parseFloat(value)
-        result["throughput"] = total_throughput
+        result["throughput"] = result["Totals_Ops/sec"]
         return result
 
     @staticmethod
@@ -297,7 +312,7 @@ class MemcachedBench:
             - libssl-dev: SSL/TLS encryption and cryptography libraries
             - clang-format: Tool to format C/C++/Java/JavaScript/Objective-C/Protobuf code
             - redis-server: The program on which we'll be running our benchmark
-              against. (NOTE: Depends on OS)
+              against.
         """
         return [
             PackageDependency("install"),
