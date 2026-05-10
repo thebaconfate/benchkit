@@ -1,37 +1,12 @@
-from pathlib import Path
 from benchkit.benches.memcached import MemcachedBench
 from benchkit.benches.memcached.campaign import MemcachedCampaign
-from benchkit.core.bktypes.contexts import (
-    BuildContext,
-    CollectContext,
-    FetchContext,
-    RunContext,
+from benchkit.core.compat.new2old import CampaignCartesianProduct
+
+variables = {"nb_threads": [1, 2, 3, 4]}
+
+campaign = CampaignCartesianProduct(
+    benchmark=MemcachedBench(),
+    variables=variables,
 )
 
-bench = MemcachedBench()
-bench_dir = Path("~/.benchkit/benches").expanduser().resolve()
-
-fc = FetchContext.from_args(
-    fetch_args={
-        "parent_dir": bench_dir,
-    }
-)
-
-fr = fc.call(bench.fetch)
-
-
-bc = BuildContext.from_fetch(ctx=fc, fetch_result=fr, build_args={})
-br = bc.call(bench.build)
-
-rc = RunContext.from_build(
-    ctx=bc,
-    build_result=br,
-    run_args={},
-)
-
-
-rr = rc.call(bench.run)
-rc.call(bench.cleanup)
-cc = CollectContext.from_run(ctx=rc, run_result=rr)
-result = cc.call(bench.collect)
-print(result)
+campaign.run()

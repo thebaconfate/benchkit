@@ -1,7 +1,4 @@
-""" """
-
 from pathlib import Path
-import re
 from typing import Literal
 from benchkit.core.bktypes import RecordResult
 from benchkit.core.bktypes.callresults import BuildResult, FetchResult, RunResult
@@ -14,7 +11,7 @@ from benchkit.core.bktypes.contexts import (
 from benchkit.dependencies.packages import PackageDependency
 from benchkit.utils.dir import get_benches_dir
 from benchkit.utils.fetchtools import git_clone
-from benchkit.utils.buildtools import build_dir_from_ctx, make
+from benchkit.utils.buildtools import make
 
 
 class MemcachedBench:
@@ -107,7 +104,6 @@ class MemcachedBench:
         data_size: int = 32,
         key_minimum: int = 0,
         key_maximum: int = 10000000,
-        **kwargs,
     ) -> RunResult:
         """
         Execute a memtier_benchmark run with the specified workload parameters.
@@ -159,30 +155,7 @@ class MemcachedBench:
             f"--key-minimum={key_minimum}" if key_minimum > 0 else "",
             f"--key-maximum={key_maximum}",
         ]
-        flags = {
-            item.split("=")[0].lstrip("-")
-            for item in run_command
-            if item.startswith("-")
-        }
 
-        for key, value in kwargs.items():
-            if key not in flags:
-                flag = key.replace("_", "-")
-                if isinstance(value, bool) and value is True:
-                    run_command.append(f"--{flag}")
-                elif isinstance(value, (int, str)):
-                    run_command.append(f"--{flag}={value}")
-                else:
-                    ctx.platform.comm.shell(
-                        " ".join(
-                            [
-                                "echo",
-                                '"[DEBUG] Unknown kwargs passed to run',
-                                f"with key: {key} ",
-                                f'and value: {value}"',
-                            ]
-                        )
-                    )
         build_dir = ctx.build_result.build_dir
         run_command = [cmd for cmd in run_command if cmd != ""]
         exec_out = ctx.exec(argv=run_command, cwd=build_dir, output_is_log=True)
@@ -263,8 +236,6 @@ class MemcachedBench:
                                       Latency", "KB/sec"],
                 "all_stats_rows": [["Sets", 7857.92, None, None, "2.31402",
                                     "2.14300", "4.44700", "6.27100", "605.20"],...],
-                "dist_headers": ["Type", "<= msec", "Percent"],
-                "dist_rows": [["SET", "3.231", "95.000"], ...]
             }
         """
         output = [
@@ -274,7 +245,7 @@ class MemcachedBench:
         connections_per_thread = int(output[1].split()[0])
         requests_per_client = int(output[2].split()[0])
         start_stats_idx = output.index("ALL STATS") + 2  # skip the ---- line
-        start_dist_idx = output.index("Request Latency Distribution") + 1
+        start_dist_idx = output.index("Request Latency Distribution")
 
         # Parsing the ALL STATS table
         all_stats_headers = output[start_stats_idx].split()
@@ -283,31 +254,26 @@ class MemcachedBench:
             try:
                 return float(value)
             except ValueError:
-                return value
+                return None
 
-        all_stats_rows = [
-            [parseFloat(data) if "-" not in data else None for data in row.split()]
-            for row in output[start_stats_idx + 2 : start_dist_idx - 1]
-        ]
-        # skips the --- line after the headers and collects the table rows till
-        # the dist table
-
-        # Parsing the Request Latency Distribution table
-        dist_headers = output[start_dist_idx].split()
-        dist_rows = [
-            [parseFloat(data) for data in row.split()]
-            for row in output[start_dist_idx + 1 :]
-            if "-" not in row
-        ]
         result: RecordResult = {
             "threads": threads,
             "connections_per_thread": connections_per_thread,
             "requests_per_client": requests_per_client,
-            "all_stats_headers": all_stats_headers,
-            "all_stats_rows": all_stats_rows,
-            "dist_headers": dist_headers,
-            "dist_rows": dist_rows,
         }
+
+        total_throughput = 0
+
+        for raw_row in output[start_stats_idx + 2 : start_dist_idx]:
+            row = raw_row.split()
+            row_type = row[0]
+            for i, value in enumerate(row[1:], start=1):
+                if i == 1:
+                    total_throughput += float(value)
+                header_name = all_stats_headers[i].replace(" ", "_")
+                key = f"{row_type}_{header_name}"
+                result[key] = parseFloat(value)
+        result["throughput"] = total_throughput
         return result
 
     @staticmethod
@@ -331,7 +297,7 @@ class MemcachedBench:
             - libssl-dev: SSL/TLS encryption and cryptography libraries
             - clang-format: Tool to format C/C++/Java/JavaScript/Objective-C/Protobuf code
             - redis-server: The program on which we'll be running our benchmark
-              against.
+              against. (NOTE: Depends on OS)
         """
         return [
             PackageDependency("install"),
