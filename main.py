@@ -5,8 +5,7 @@ from benchkit.platforms import get_current_platform
 from tests.campaigns.campaign_perf_cartprod import make_perfstat_process_dataframe
 
 variables = {
-    "nb_threads": [i for i in range(1, 3)],
-    # "run_count": [2],
+    "nb_threads": [i for i in range(1, 13)],
     "key_pattern": ["G:G"],
 }
 
@@ -14,7 +13,7 @@ variables = {
 campaign = MemcachedCampaign(
     variables=variables,
     **{
-        "nb_runs": 1,
+        "nb_runs": 30,
     },
 )
 
